@@ -15,19 +15,41 @@ import Data.Functor.Identity
 
 -- | The Phantom State Monad Transformer is like the
 --   State Monad Transformer, but it does not hold
---   any value.
+--   any value. Therefore, it automatically discards
+--   the result of any computation. Only changes in
+--   the state and effects will remain. The primitive
+--   operations in this monad are:
+--
+-- * 'useState': Performs an effect. State is unchanged.
+-- * 'changeState': Changes state. No effect is performed.
+--
+--   These two functions complement each other. If you want
+--   to perform an effect /and/ change the state, build your
+--   action using the 'PhantomStateT' constructor.
+--
+--   Use 'runPhantomStateT' (or 'runPhantomState') to get
+--   the result of a phantom state computation.
+--
+--   As stated before, 'PhantomStateT' is a monad transformer.
+--   Therefore, it is an instance of the 'MonadTrans' class.
+--   In this case, 'lift' @m@ performs the same action as @m@,
+--   but returning no value. It captures the effects in @m@
+--   and nothing else.
+--
 newtype PhantomStateT s m a = PhantomStateT (s -> m s)
 
 -- | Type synonym of 'PhantomStateT' where the underlying 'Monad' is the 'Identity' monad.
-type PhantomState s a = PhantomStateT s Identity a
+type PhantomState s = PhantomStateT s Identity
 
 -- | Perform an applicative action using the current state, leaving
---   the state unchanged.
+--   the state unchanged. The result will be discarded, so only the
+--   effect will remain.
 useState :: Applicative m => (s -> m a) -> PhantomStateT s m ()
 {-# INLINE useState #-}
 useState f = PhantomStateT $ \x -> f x *> pure x
 
--- | Modify the state using a pure function.
+-- | Modify the state using a pure function. No effect will be produced,
+--   only the state will be modified.
 changeState :: Applicative m => (s -> s) -> PhantomStateT s m ()
 {-# INLINE changeState #-}
 changeState f = PhantomStateT $ pure . f
