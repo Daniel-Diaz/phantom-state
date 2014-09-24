@@ -1,41 +1,40 @@
 
--- | Phantom Monad State Transformer constructor and functions.
-module Control.Monad.PhantomState (
-    PhantomStateT (..)
+-- | Phantom State Transformer type and functions.
+module Control.Applicative.PhantomState (
+    PhantomStateT
   , PhantomState
   , useState
   , changeState
+  , useAndChangeState
   , runPhantomStateT
   , runPhantomState
   ) where
 
 import Control.Applicative
-import Control.Monad.Trans.Class
 import Data.Functor.Identity
 
--- | The Phantom State Monad Transformer is like the
+-- | The Phantom State Transformer is like the
 --   State Monad Transformer, but it does not hold
 --   any value. Therefore, it automatically discards
 --   the result of any computation. Only changes in
---   the state and effects will remain. The primitive
---   operations in this monad are:
+--   the state and effects will remain. This transformer
+--   produces a new 'Applicative' functor from any 'Monad'.
+--   The primitive operations in this functor are:
 --
--- * 'useState': Performs an effect. State is unchanged.
+-- * 'useState': Performs effects. State is unchanged.
 -- * 'changeState': Changes state. No effect is performed.
+-- * 'useAndChangeState': Changes state and performs effects.
 --
---   These two functions complement each other, and they
---   are probably everything you need. If you want
---   to perform an effect /and/ change the state, build your
---   action using the 'PhantomStateT' constructor.
+--   Although 'useState' and 'changeState' are defined in
+--   terms of 'useAndChangeState':
+--
+-- >    useState f = useAndChangeState (\s -> f s *> pure s)
+-- > changeState f = useAndChangeState (pure . f)
+--
+--   So 'useAndChangeState' is the only actual primitive.
 --
 --   Use 'runPhantomStateT' (or 'runPhantomState') to get
 --   the result of a phantom state computation.
---
---   As stated before, 'PhantomStateT' is a monad transformer.
---   Therefore, it is an instance of the 'MonadTrans' class.
---   In this case, 'lift' @m@ performs the same action as @m@,
---   but returning no value. It captures the effects in @m@
---   and nothing else.
 --
 newtype PhantomStateT s m a = PhantomStateT (s -> m s)
 
@@ -47,13 +46,25 @@ type PhantomState s = PhantomStateT s Identity
 --   effect will remain.
 useState :: Applicative m => (s -> m a) -> PhantomStateT s m ()
 {-# INLINE useState #-}
-useState f = PhantomStateT $ \x -> f x *> pure x
+useState f = useAndChangeState $ \s -> f s *> pure s
 
 -- | Modify the state using a pure function. No effect will be produced,
 --   only the state will be modified.
 changeState :: Applicative m => (s -> s) -> PhantomStateT s m ()
 {-# INLINE changeState #-}
-changeState f = PhantomStateT $ pure . f
+changeState f = useAndChangeState $ \s -> pure (f s)
+
+-- | Combination of 'useState' and 'changeState'. It allows you to change the state while
+--   performing any effects. The new state will be the result of applying the argument
+--   function to the old state. The following equations hold:
+--
+-- >    useState f *> changeState g }
+-- >                                } = useAndChangeState (\s -> f s *> g s)
+-- > changeState g *>    useState f }
+--
+useAndChangeState :: (s -> m s) -> PhantomStateT s m ()
+{-# INLINE useAndChangeState #-}
+useAndChangeState = PhantomStateT
 
 -- | Perform a phantom state computation by setting an initial state
 --   and running all the actions from there.
@@ -87,14 +98,3 @@ instance Monad m => Applicative (PhantomStateT s m) where
   {-# INLINE (<*) #-}
   PhantomStateT f <*  PhantomStateT g = PhantomStateT (\x -> f x >>= g)
 
-instance Monad m => Monad (PhantomStateT s m) where
-  {-# INLINE return #-}
-  return = pure
-  {-# INLINE (>>=) #-}
-  x >>= f = x *> f undefined
-  {-# INLINE (>>) #-}
-  (>>) = (*>)
-
-instance MonadTrans (PhantomStateT s) where
-  {-# INLINE lift #-}
-  lift m = PhantomStateT (\x -> m >> return x)

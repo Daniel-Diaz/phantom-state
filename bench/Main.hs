@@ -5,15 +5,16 @@ import Criterion.Main
 import qualified Data.Vector.Unboxed as V
 import qualified Data.Vector.Unboxed.Mutable as MV
 
--- monads
-import Control.Monad (replicateM,mapM_)
+-- functors
+import Control.Applicative
+import Control.Monad (mapM_,replicateM)
+import Data.Foldable (sequenceA_)
 import Control.Monad.Trans.Class
-
 -- state
 import Control.Monad.Trans.State
 
 -- phantom-state
-import Control.Monad.PhantomState
+import Control.Applicative.PhantomState
 
 createVector1 :: Int -> V.Vector Int
 createVector1 n = V.create $ do
@@ -25,13 +26,15 @@ createVector1 n = V.create $ do
   execStateT (replicateM n step) 0
   return v
 
+replicateA_ :: Applicative f => Int -> f a -> f ()
+replicateA_ n f = sequenceA_ (replicate n f)
+
 createVector2 :: Int -> V.Vector Int
 createVector2 n = V.create $ do
   v <- MV.unsafeNew n
-  let step = do 
-        useState $ \i -> MV.write v i i
-        changeState (+1)
-  runPhantomStateT (replicateM n step) 0
+  let step = useState (\i -> MV.write v i i)
+          *> changeState (+1)
+  runPhantomStateT (replicateA_ n step) 0
   return v
 
 createVector3 :: Int -> V.Vector Int
