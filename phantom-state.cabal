@@ -1,6 +1,6 @@
 name:                phantom-state
-version:             0.2.0.0
-synopsis:            Phantom State Monad Transformer. Like State Monad, but without values.
+version:             0.2.0.1
+synopsis:            Phantom State Transformer. Like State Monad, but without values.
 description:         A monad transformer that mimics the State Monad Transformer from the
                      <http://hackage.haskell.org/package/transformers transformers> package,
                      but dropping the values. In those cases that you want to use the State
