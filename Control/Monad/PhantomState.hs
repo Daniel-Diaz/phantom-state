@@ -23,7 +23,8 @@ import Data.Functor.Identity
 -- * 'useState': Performs an effect. State is unchanged.
 -- * 'changeState': Changes state. No effect is performed.
 --
---   These two functions complement each other. If you want
+--   These two functions complement each other, and they
+--   are probably everything you need. If you want
 --   to perform an effect /and/ change the state, build your
 --   action using the 'PhantomStateT' constructor.
 --
