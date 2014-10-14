@@ -4,8 +4,8 @@ synopsis:            Phantom State Transformer. Like State Monad, but without va
 description:         A monad transformer that mimics the State Monad Transformer from the
                      <http://hackage.haskell.org/package/transformers transformers> package,
                      but dropping the values. In those cases that you want to use the State
-                     Monad but you only care about how the state changes, use this library
-                     to earn a plus of efficiency.
+                     Monad but you only care about effects and how the state changes, use
+                     this library to earn a plus of efficiency.
 license:             BSD3
 license-file:        LICENSE
 author:              Daniel Díaz
