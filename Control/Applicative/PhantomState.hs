@@ -90,7 +90,7 @@ instance Functor (PhantomStateT s m) where
 
 instance Monad m => Applicative (PhantomStateT s m) where
   {-# INLINE pure #-}
-  pure _ = PhantomStateT pure
+  pure _ = PhantomStateT return
   {-# INLINE (<*>) #-}
   PhantomStateT f <*> PhantomStateT g = PhantomStateT (\x -> f x >>= g)
   {-# INLINE  (*>) #-}
