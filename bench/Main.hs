@@ -32,7 +32,7 @@ replicateA_ n f = sequenceA_ (replicate n f)
 createVector2 :: Int -> V.Vector Int
 createVector2 n = V.create $ do
   v <- MV.unsafeNew n
-  let loop = useAndChangeState $ \i -> MV.write v i i >> pure (i+1)
+  let step = useAndChangeState $ \i -> MV.write v i i >> pure (i+1)
   runPhantomStateT (replicateA_ n step) 0
   return v
 
