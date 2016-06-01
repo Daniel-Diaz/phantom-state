@@ -103,3 +103,9 @@ instance (Monad m, Alternative m) => Alternative (PhantomStateT s m) where
   empty = PhantomStateT (const empty)
   {-# INLINE (<|>) #-}
   PhantomStateT f <|> PhantomStateT g = PhantomStateT (\x -> f x <|> g x)
+
+instance Monad m => Monoid (PhantomStateT s m a) where
+  {-# INLINE mempty #-}
+  mempty = pure undefined
+  {-# INLINE mappend #-}
+  mappend = (*>)
