@@ -1,4 +1,6 @@
 
+{-# LANGUAGE CPP #-}
+
 -- | Phantom State Transformer type and functions.
 module Control.Applicative.PhantomState (
     PhantomStateT
@@ -12,6 +14,13 @@ module Control.Applicative.PhantomState (
 
 import Control.Applicative
 import Data.Functor.Identity
+-- Conditional imports
+#if !MIN_VERSION_base(4,8,0)
+import Data.Monoid (Monoid (..))
+#endif
+#if MIN_VERSION_base(4,9,0)
+import Data.Semigroup (Semigroup (..))
+#endif
 
 -- | The Phantom State Transformer is like the
 --   State Monad Transformer, but it does not hold
@@ -109,3 +118,9 @@ instance Monad m => Monoid (PhantomStateT s m a) where
   mempty = pure undefined
   {-# INLINE mappend #-}
   mappend = (*>)
+
+#if MIN_VERSION_base(4,9,0)
+instance Monad m => Semigroup (PhantomStateT s m a) where
+  {-# INLINE (<>) #-}
+  (<>) = (*>)
+#endif
