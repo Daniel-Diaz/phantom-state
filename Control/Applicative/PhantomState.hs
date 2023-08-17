@@ -18,7 +18,7 @@ import Data.Functor.Identity
 #if !MIN_VERSION_base(4,8,0)
 import Data.Monoid (Monoid (..))
 #endif
-#if MIN_VERSION_base(4,9,0)
+#if MIN_VERSION_base(4,9,0) && !MIN_VERSION_base(4,10,0)
 import Data.Semigroup (Semigroup (..))
 #endif
 
@@ -116,8 +116,6 @@ instance (Monad m, Alternative m) => Alternative (PhantomStateT s m) where
 instance Monad m => Monoid (PhantomStateT s m a) where
   {-# INLINE mempty #-}
   mempty = pure undefined
-  {-# INLINE mappend #-}
-  mappend = (*>)
 
 #if MIN_VERSION_base(4,9,0)
 instance Monad m => Semigroup (PhantomStateT s m a) where

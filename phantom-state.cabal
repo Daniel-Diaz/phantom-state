@@ -22,7 +22,7 @@ Source-repository head
 library
   exposed-modules: Control.Applicative.PhantomState
   build-depends: base >= 4.7 && < 5
-               , transformers >= 0.3 && < 0.6
+               , transformers >= 0.3
   default-language: Haskell2010
   ghc-options: -O2 -Wall
 
